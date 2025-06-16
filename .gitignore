@@ -1,0 +1,5 @@
+# .gitignore
+venv/
+__pycache__/
+*.pkl
+*.h5
