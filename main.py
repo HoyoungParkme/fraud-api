@@ -1,3 +1,4 @@
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 from pydantic import BaseModel
 import pandas as pd
@@ -7,6 +8,13 @@ import joblib
 from sklearn.preprocessing import LabelEncoder
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 또는 ["http://localhost:3000"]처럼 명시도 가능
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # 모델 및 스케일러 로드
 model = tf.keras.models.load_model("fraud_model.h5")
