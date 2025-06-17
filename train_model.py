@@ -8,11 +8,9 @@ from sklearn.metrics import f1_score
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout
 
-# 폴더 경로 설정
-DATA_PATH = "data/train.csv"
+# 경로 설정
+DATA_PATH = "data/train.csv"          # 🚨 train.csv 위치
 MODEL_DIR = "model_assets"
-
-# 폴더 없으면 생성
 os.makedirs(MODEL_DIR, exist_ok=True)
 
 # 데이터 로드
@@ -25,7 +23,7 @@ X = df.drop(columns=[
     "vehicle_price", "vehicle_weight", "year", "month", "day", "claim_day_of_week"
 ])
 
-# 파생 피처 생성
+# 파생 피처 생성 (삭제된 컬럼 기준으로 원본 df에서 생성)
 X["age_group"] = pd.cut(df["age_of_driver"], [0, 25, 35, 45, 55, 65, float("inf")], labels=[0, 1, 2, 3, 4, 5])
 X["safty_rating_group"] = pd.cut(df["safty_rating"], [0, 20, 40, 60, 80, 100], labels=[0, 1, 2, 3, 4])
 X["income_group"] = pd.cut(df["annual_income"], [0, 35000, 40000, float("inf")], labels=[0, 1, 2])
@@ -48,6 +46,9 @@ for col in label_cols:
     X[col] = le.fit_transform(X[col].astype(str))
     joblib.dump(le, os.path.join(MODEL_DIR, f"label_encoder_{col}.pkl"))
     label_encoders[col] = le
+
+    # 클래스 목록 출력 (디버깅용)
+    print(f"{col} 클래스 목록: {list(le.classes_)}")
 
 # 원핫 인코딩
 X = pd.get_dummies(X, columns=["accident_site", "channel", "vehicle_category", "vehicle_color"], drop_first=False)
@@ -75,7 +76,7 @@ model = Sequential([
     Dense(1, activation='sigmoid')
 ])
 
-# 모델 컴파일 & 학습
+# 학습
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 model.fit(X_train, y_train, epochs=100, batch_size=32, validation_split=0.2, verbose=1)
 
