@@ -87,7 +87,7 @@ def predict(data: FraudInput):
         labels=["0-5", "5-10", "10-15", "15+"]
     )
 
-    # 전처리용 수치형 컬럼 제거
+    # 파생 변수 적용 후 원래 수치형 컬럼 제거
     drop_cols = [
         "age_of_driver", "safty_rating", "annual_income",
         "vehicle_price", "vehicle_weight", "liab_prct",
@@ -101,8 +101,6 @@ def predict(data: FraudInput):
         if os.path.exists(le_path):
             le = joblib.load(le_path)
             input_df[col] = le.transform(input_df[col].astype(str))
-        else:
-            continue
 
     # 원핫 인코딩
     input_df = pd.get_dummies(input_df, drop_first=False)
@@ -117,6 +115,11 @@ def predict(data: FraudInput):
     input_scaled = scaler.transform(input_df)
 
     # 예측
-    prediction = model.predict(input_scaled)[0][0]
+    pred = model.predict(input_scaled)
+    probability = float(pred[0][0])
+    is_fraud = probability > 0.5
 
-    return {"prediction": float(prediction)}
+    return {
+        "probability": round(probability, 4),
+        "is_fraud": is_fraud
+    }
